@@ -23,9 +23,13 @@ class Game extends React.Component {
       return;
     }
 
+    const player = this.state.xIsNext ? 'X' : 'O';
+
     this.setState({
       history: history.concat([{
-        squares: squares.set(i, this.state.xIsNext ? 'X' : 'O')
+        squares: squares.set(i, player),
+        coordinates: this.getBoardCoordinates(i),
+        player
       }]),
       xIsNext: !this.state.xIsNext,
       stepNumber: history.length
@@ -42,6 +46,13 @@ class Game extends React.Component {
 
   isBoardFilled(squares) {
     return squares.filter(square => Boolean(square)).size === 9;
+  }
+
+  getBoardCoordinates(index) {
+    return [
+      Math.floor(index / 3) + 1,
+      index % 3 + 1
+    ];
   }
 
   calculateWinner(squares) {
@@ -79,7 +90,7 @@ class Game extends React.Component {
 
   getMovesList(history) {
     return history.map((step, move) => {
-      const description = move ? `Move #${move}` : 'Game start';
+      const description = move ? `Move #${move}: ${step.player} to (${step.coordinates[0]}, ${step.coordinates[1]})` : 'Game start';
       return (
         <li key={move}>
           <a href="#" onClick={() => this.jumpTo(move)}>
