@@ -6,17 +6,18 @@ class Game extends React.Component {
   constructor() {
     super();
     this.state = {
-      history: [{
+      history: List([{
         squares: List(Array(9).fill(null))
-      }],
+      }]),
       xIsNext: true,
-      stepNumber: 0
+      stepNumber: 0,
+      isMovesListDescending: false
     }
   }
 
   handleClick(i) {
     const history = this.state.history;
-    const current = history[history.length - 1];
+    const current = history.get(history.size - 1);
     const squares = current.squares;
 
     if (this.calculateWinner(squares) || squares.get(i)) {
@@ -26,13 +27,13 @@ class Game extends React.Component {
     const player = this.state.xIsNext ? 'X' : 'O';
 
     this.setState({
-      history: history.concat([{
+      history: history.push({
         squares: squares.set(i, player),
         coordinates: this.getBoardCoordinates(i),
         player
-      }]),
+      }),
       xIsNext: !this.state.xIsNext,
-      stepNumber: history.length
+      stepNumber: history.size
     });
   }
 
@@ -89,7 +90,7 @@ class Game extends React.Component {
   }
 
   getMovesList(history) {
-    return history.map((step, move) => {
+    const movesList = history.map((step, move) => {
       const description = move ? `Move #${move}: ${step.player} to (${step.coordinates[0]}, ${step.coordinates[1]})` : 'Game start';
       return (
         <li key={move}>
@@ -98,12 +99,23 @@ class Game extends React.Component {
           </a>
         </li>
       );
+    });
+
+    if (this.state.isMovesListDescending) {
+      return movesList.reverse();
+    }
+    return movesList;
+  }
+
+  toggleHistorySortDirection() {
+    this.setState({
+      isMovesListDescending: !this.state.isMovesListDescending
     })
   }
 
   render() {
     const history = this.state.history;
-    const current = history[this.state.stepNumber];
+    const current = history.get(this.state.stepNumber);
     const squares = current.squares;
     const moves = this.getMovesList(history);
 
@@ -113,8 +125,11 @@ class Game extends React.Component {
           <Board squares={squares} onClick={(i) => this.handleClick(i)} />
         </div>
         <div className="game-info">
+          <button className="sort-history" onClick={() => this.toggleHistorySortDirection()}>
+            {this.state.isMovesListDescending ? 'Sort Ascending' : 'Sort Descending'}
+          </button>
           <div>{this.getStatusText(squares)}</div>
-          <ol>{moves}</ol>
+          <ol reversed={this.state.isMovesListDescending}>{moves}</ol>
         </div>
       </div>
     );
